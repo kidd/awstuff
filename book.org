@@ -63,17 +63,22 @@
 ** One off not-so-simple python Lambda
    Let's try to use an external lib, like stripe. For stripe you need
    2 things, the lib, and the token.
+   #+begin_src python
+     import stripe
+     def lambda_handler(event, context):
+         print("hello!")
+   #+end_src
 *** Layer vs bundling
     There are 2 ways to use external libs: Bundling and using layers:
 **** Bundle
      As they explain [[https://stackoverflow.com/questions/36411364/how-to-use-stripe-apis-on-aws-lambda-in-python][here]], you can bundle all needed libs in the same
-     zip together with your function.  =pip install --target="$PWD"
+     zip together with your function.  =pip install --target\="$PWD"
      --upgrade stripe; zip -r my-fun.zip *=.
 **** Layers
      A more sophisticated way is to upload the lib separately, and
      then combine your function and the layer.  As explained [[https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html][in the
      official docs]], your libs have to be in a concrete path so that
-     the "main" lambda function gets them.
+     the "main" lambda function gets them. Another example [[https://wakeupcoders.medium.com/how-to-use-external-libraries-in-lambda-function-df1cee4a7c3a][here]].
 
      Note: Check if the paths from "Layers" are also accepted in
      "Bundle". Maybe there's no need to put the whole thing in the
@@ -89,6 +94,20 @@
        cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/site-packages
        cd build; zip -r ../stripe.zip .
      #+end_src
+*** Env vars
+    Our file is now something like this
+    #+begin_src python
+      import os
+      import stripe
+      def lambda_handler(event, context):
+          stripe.api_key=os.environ.get('STRIPE_SK', '')
+          for c in stripe.Customers.list():
+            print('hello ', c.name)
+    #+end_src
+
+    Go to the Configuration tab, "environment variables", and add your env var.
+
+    Make sure everything is deployed, test and yay!
 
 * Terraform
 * AIM
