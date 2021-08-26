@@ -1,0 +1,96 @@
+#+TITLE: AWSTUFF
+#+AUTHOR: Raimon Grau
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline
+#+OPTIONS: author:t c:nil creator:comment d:(not "LOGBOOK") date:nil
+#+OPTIONS: e:t email:nil f:t inline:t p:nil pri:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:t todo:t |:t
+#+EXCLUDE_TAGS: noexport
+#+KEYWORDS: bash zsh shell
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+
+#+OPTIONS: html-style:nil
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="styles.css"/>
+
+#+OPTIONS: reveal_center:nil timestamp:nil
+#+REVEAL_THEME: black
+
+# toc:nil num:nil
+
+* AWS Lambda
+** One off simple python Lambda
+   Like a way to have cheap scripts that run daily, to fetch stuff
+   from the internet and synchronize data, or smth.
+
+   Lambdas are region based, so open the region you want to run in.
+*** Hello world
+    - Open the lambda AWS cli
+    - Create Function
+    - blueprint: hello-world-python
+    - name: my-f
+    - next, next, next, TEST.
+    - yay
+
+    Things to take into account are that the lamdba is called via the function
+    #+begin_src python
+      def lambda_handler(event, context):
+          print("hello!")
+    #+end_src
+
+    The file is called ~lambda_function.py~ IIRC
+*** Monitor
+    There are (at least) 2 ways of monitoring single executions of lambdas:
+**** Via cloudwatch
+     To get notified if it fails via cloudwatch, we'll have to create a
+     cloudwatch alarm with thresholds of 1, and and sns with an email
+     destination.
+
+     - Click on =monitor= tab.
+     - View logs on cloudwatch
+     - click on the alarms on the sidebar (not really where the link
+       brought us)
+     - Create Alarm
+     - Select metric: Lambdas->by function->my-f:Errors
+     - statistic: sum, period: 1m, >=1
+     - In Alarm, select (or create) SNS topic.
+**** Via Lambda destination
+     - Add Destination
+     - on error
+     - sns topic
+*** Schdedule
+    We add scheduling "triggers" from the perspective
+** One off not-so-simple python Lambda
+   Let's try to use an external lib, like stripe. For stripe you need
+   2 things, the lib, and the token.
+*** Layer vs bundling
+    There are 2 ways to use external libs: Bundling and using layers:
+**** Bundle
+     As they explain [[https://stackoverflow.com/questions/36411364/how-to-use-stripe-apis-on-aws-lambda-in-python][here]], you can bundle all needed libs in the same
+     zip together with your function.  =pip install --target="$PWD"
+     --upgrade stripe; zip -r my-fun.zip *=.
+**** Layers
+     A more sophisticated way is to upload the lib separately, and
+     then combine your function and the layer.  As explained [[https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html][in the
+     official docs]], your libs have to be in a concrete path so that
+     the "main" lambda function gets them.
+
+     Note: Check if the paths from "Layers" are also accepted in
+     "Bundle". Maybe there's no need to put the whole thing in the
+     same directory and we can use the same strategy. That'd make
+     sense.
+
+     #+begin_src shell
+       echo 'stripe' > requirements.txt
+       python -m venv venv;
+       . venv/bin/activate
+       pip install -r requirements.txt
+       mkdir build/python/lib/python3.7/site-packages
+       cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/site-packages
+       cd build; zip -r ../stripe.zip .
+     #+end_src
+
+* Terraform
+* AIM
+* aws-mfa
+* awslogs get '/bla/my-log-group' ALL  --start=1h --watch | grep '/bla/my-log-group/something' | lnav
