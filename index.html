@@ -70,36 +70,37 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org2f20e73">1. AWS Lambda</a>
+<li><a href="#org24106d4">1. AWS Lambda</a>
 <ul>
-<li><a href="#orgb6d9673">1.1. One off simple python Lambda</a>
+<li><a href="#org5e3b3aa">1.1. One off simple python Lambda</a>
 <ul>
-<li><a href="#orge00c8f8">1.1.1. Hello world</a></li>
-<li><a href="#orgc29deac">1.1.2. Monitor</a></li>
-<li><a href="#orge727989">1.1.3. Schdedule</a></li>
+<li><a href="#org618e501">1.1.1. Hello world</a></li>
+<li><a href="#orge2fdb43">1.1.2. Monitor</a></li>
+<li><a href="#orgdc74996">1.1.3. Schdedule</a></li>
 </ul>
 </li>
-<li><a href="#orgd9c4d67">1.2. One off not-so-simple python Lambda</a>
+<li><a href="#org795f5d7">1.2. One off not-so-simple python Lambda</a>
 <ul>
-<li><a href="#orgbde04cb">1.2.1. Layer vs bundling</a></li>
+<li><a href="#org17a7736">1.2.1. Layer vs bundling</a></li>
+<li><a href="#org31057b0">1.2.2. Env vars</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#org8b45377">2. Terraform</a></li>
-<li><a href="#orgc3e7b14">3. AIM</a></li>
-<li><a href="#orgca763bd">4. aws-mfa</a></li>
-<li><a href="#org0506a0b">5. awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</a></li>
+<li><a href="#orgc74e5cc">2. Terraform</a></li>
+<li><a href="#org240d377">3. AIM</a></li>
+<li><a href="#org272f982">4. aws-mfa</a></li>
+<li><a href="#orge444f33">5. awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org2f20e73" class="outline-2">
-<h2 id="org2f20e73"><span class="section-number-2">1</span> AWS Lambda</h2>
+<div id="outline-container-org24106d4" class="outline-2">
+<h2 id="org24106d4"><span class="section-number-2">1</span> AWS Lambda</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-orgb6d9673" class="outline-3">
-<h3 id="orgb6d9673"><span class="section-number-3">1.1</span> One off simple python Lambda</h3>
+<div id="outline-container-org5e3b3aa" class="outline-3">
+<h3 id="org5e3b3aa"><span class="section-number-3">1.1</span> One off simple python Lambda</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Like a way to have cheap scripts that run daily, to fetch stuff
@@ -110,8 +111,8 @@ from the internet and synchronize data, or smth.
 Lambdas are region based, so open the region you want to run in.
 </p>
 </div>
-<div id="outline-container-orge00c8f8" class="outline-4">
-<h4 id="orge00c8f8"><span class="section-number-4">1.1.1</span> Hello world</h4>
+<div id="outline-container-org618e501" class="outline-4">
+<h4 id="org618e501"><span class="section-number-4">1.1.1</span> Hello world</h4>
 <div class="outline-text-4" id="text-1-1-1">
 <ul class="org-ul">
 <li>Open the lambda AWS cli</li>
@@ -136,15 +137,15 @@ The file is called <code>lambda_function.py</code> IIRC
 </p>
 </div>
 </div>
-<div id="outline-container-orgc29deac" class="outline-4">
-<h4 id="orgc29deac"><span class="section-number-4">1.1.2</span> Monitor</h4>
+<div id="outline-container-orge2fdb43" class="outline-4">
+<h4 id="orge2fdb43"><span class="section-number-4">1.1.2</span> Monitor</h4>
 <div class="outline-text-4" id="text-1-1-2">
 <p>
 There are (at least) 2 ways of monitoring single executions of lambdas:
 </p>
 </div>
 <ol class="org-ol">
-<li><a id="org7cf512f"></a>Via cloudwatch<br />
+<li><a id="orge962fa5"></a>Via cloudwatch<br />
 <div class="outline-text-5" id="text-1-1-2-1">
 <p>
 To get notified if it fails via cloudwatch, we'll have to create a
@@ -164,7 +165,7 @@ brought us)</li>
 </ul>
 </div>
 </li>
-<li><a id="org57b9041"></a>Via Lambda destination<br />
+<li><a id="org386a619"></a>Via Lambda destination<br />
 <div class="outline-text-5" id="text-1-1-2-2">
 <ul class="org-ul">
 <li>Add Destination</li>
@@ -175,8 +176,8 @@ brought us)</li>
 </li>
 </ol>
 </div>
-<div id="outline-container-orge727989" class="outline-4">
-<h4 id="orge727989"><span class="section-number-4">1.1.3</span> Schdedule</h4>
+<div id="outline-container-orgdc74996" class="outline-4">
+<h4 id="orgdc74996"><span class="section-number-4">1.1.3</span> Schdedule</h4>
 <div class="outline-text-4" id="text-1-1-3">
 <p>
 We add scheduling "triggers" from the perspective
@@ -184,38 +185,44 @@ We add scheduling "triggers" from the perspective
 </div>
 </div>
 </div>
-<div id="outline-container-orgd9c4d67" class="outline-3">
-<h3 id="orgd9c4d67"><span class="section-number-3">1.2</span> One off not-so-simple python Lambda</h3>
+<div id="outline-container-org795f5d7" class="outline-3">
+<h3 id="org795f5d7"><span class="section-number-3">1.2</span> One off not-so-simple python Lambda</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Let's try to use an external lib, like stripe. For stripe you need
 2 things, the lib, and the token.
 </p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> stripe
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">lambda_handler</span>(event, context):
+    <span style="font-weight: bold;">print</span>(<span style="font-style: italic;">"hello!"</span>)
+</pre>
 </div>
-<div id="outline-container-orgbde04cb" class="outline-4">
-<h4 id="orgbde04cb"><span class="section-number-4">1.2.1</span> Layer vs bundling</h4>
+</div>
+<div id="outline-container-org17a7736" class="outline-4">
+<h4 id="org17a7736"><span class="section-number-4">1.2.1</span> Layer vs bundling</h4>
 <div class="outline-text-4" id="text-1-2-1">
 <p>
 There are 2 ways to use external libs: Bundling and using layers:
 </p>
 </div>
 <ol class="org-ol">
-<li><a id="orgde25e8a"></a>Bundle<br />
+<li><a id="orgeffb135"></a>Bundle<br />
 <div class="outline-text-5" id="text-1-2-1-1">
 <p>
 As they explain <a href="https://stackoverflow.com/questions/36411364/how-to-use-stripe-apis-on-aws-lambda-in-python">here</a>, you can bundle all needed libs in the same
-zip together with your function.  <code>pip install --target</code>"$PWD"
+zip together with your function.  <code>pip install --target\</code>"$PWD"
 &#x2013;upgrade stripe; zip -r my-fun.zip *=.
 </p>
 </div>
 </li>
-<li><a id="org1f554ac"></a>Layers<br />
+<li><a id="org33f9ad7"></a>Layers<br />
 <div class="outline-text-5" id="text-1-2-1-2">
 <p>
 A more sophisticated way is to upload the lib separately, and
 then combine your function and the layer.  As explained <a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html">in the
 official docs</a>, your libs have to be in a concrete path so that
-the "main" lambda function gets them.
+the "main" lambda function gets them. Another example <a href="https://wakeupcoders.medium.com/how-to-use-external-libraries-in-lambda-function-df1cee4a7c3a">here</a>.
 </p>
 
 <p>
@@ -239,20 +246,45 @@ cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/site-packages
 </li>
 </ol>
 </div>
+<div id="outline-container-org31057b0" class="outline-4">
+<h4 id="org31057b0"><span class="section-number-4">1.2.2</span> Env vars</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<p>
+Our file is now something like this
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> os
+<span style="font-weight: bold;">import</span> stripe
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">lambda_handler</span>(event, context):
+    <span style="font-weight: bold; font-style: italic;">stripe.api_key</span>=os.environ.get(<span style="font-style: italic;">'STRIPE_SK'</span>, <span style="font-style: italic;">''</span>)
+    <span style="font-weight: bold;">for</span> c <span style="font-weight: bold;">in</span> stripe.Customers.<span style="font-weight: bold;">list</span>():
+      <span style="font-weight: bold;">print</span>(<span style="font-style: italic;">'hello '</span>, c.name)
+</pre>
+</div>
+
+<p>
+Go to the Configuration tab, "environment variables", and add your env var.
+</p>
+
+<p>
+Make sure everything is deployed, test and yay!
+</p>
+</div>
+</div>
 </div>
 </div>
 
-<div id="outline-container-org8b45377" class="outline-2">
-<h2 id="org8b45377"><span class="section-number-2">2</span> Terraform</h2>
+<div id="outline-container-orgc74e5cc" class="outline-2">
+<h2 id="orgc74e5cc"><span class="section-number-2">2</span> Terraform</h2>
 </div>
-<div id="outline-container-orgc3e7b14" class="outline-2">
-<h2 id="orgc3e7b14"><span class="section-number-2">3</span> AIM</h2>
+<div id="outline-container-org240d377" class="outline-2">
+<h2 id="org240d377"><span class="section-number-2">3</span> AIM</h2>
 </div>
-<div id="outline-container-orgca763bd" class="outline-2">
-<h2 id="orgca763bd"><span class="section-number-2">4</span> aws-mfa</h2>
+<div id="outline-container-org272f982" class="outline-2">
+<h2 id="org272f982"><span class="section-number-2">4</span> aws-mfa</h2>
 </div>
-<div id="outline-container-org0506a0b" class="outline-2">
-<h2 id="org0506a0b"><span class="section-number-2">5</span> awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</h2>
+<div id="outline-container-orge444f33" class="outline-2">
+<h2 id="orge444f33"><span class="section-number-2">5</span> awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</h2>
 </div>
 </div>
 <div id="postamble" class="status">
