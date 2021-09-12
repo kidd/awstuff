@@ -86,14 +86,18 @@
      same directory and we can use the same strategy. That'd make
      sense.
 
+     How to package a lambda with zip: https://docs.aws.amazon.com/lambda/latest/dg/python-package.html#python-package-create-package-with-dependency
      #+begin_src shell
        echo 'stripe' > requirements.txt
        python -m venv venv;
        . venv/bin/activate
        pip install -r requirements.txt
        mkdir build/python/lib/python3.7/site-packages
-       cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/site-packages
+       cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/
+       # cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/site-packages
+       # cd bui
        cd build; zip -r ../stripe.zip .
+
      #+end_src
 *** Env vars
     Our file is now something like this
@@ -109,9 +113,149 @@
     Go to the Configuration tab, "environment variables", and add your env var.
 
     Make sure everything is deployed, test and yay!
+** s3-csv-to-rds
+   configure an s3 repo. Create a lambda that gets triggered on =put
+   object= on that s3. Code is as follows.
+   #+begin_src python
+     import json
+     import urllib.parse
+     import boto3
+     import psycopg2 as pg2
+     import os
+     import time
+     from sqlalchemy import create_engine
+     import pandas as pd
 
+
+
+     print('Loading function')
+
+     s3 = boto3.client('s3')
+
+     dbname = 'csvs'
+     user = 'postgres'
+     host = 'database-1........us-east-1.rds.amazonaws.com'
+     password = os.environ.get('RDS_PASS')
+     bucket = 'metabase-testing-csv-bucket'
+
+     connection_string = "postgresql://{}:{}@{}:5432/{}"\
+         .format(user, password, host, dbname)
+
+
+     def create_table(key, s3_object):
+         response = s3.get_object(Bucket=bucket, Key=key)
+         status = response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+         if status == 200:
+             print(f"Successful S3 get_object response. Status - {status}")
+             engine=create_engine(connection_string)
+
+             data = pd.read_csv(response.get("Body"))
+             data.to_sql("mytable_"+ "{}".format(int(time.time())), engine, index=True, dtype=None)
+         else:
+             print(f"Unsuccessful S3 get_object response. Status - {status}")
+
+
+
+     def do_db_things(key, s3_object):
+         conn = psycopg2.connect(connection_string)
+         cur = conn.cursor()
+         cur.execute("select aws_s3.table_import_from_s3 ('public.test', '', '(FORMAT CSV, HEADER true)', bucket, 'csvs/test.csv', 'us-east-1');")
+         cur.execute("COMMIT;")
+         print("done?")
+
+     def lambda_handler(event, context):
+         #print("Received event: " + json.dumps(event, indent=2))
+
+         # Get the object from the event and show its content type
+         bucket = event['Records'][0]['s3']['bucket']['name']
+         key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+         try:
+             response = s3.get_object(Bucket=bucket, Key=key)
+             print("CONTENT TYPE: " + response['ContentType'])
+             print(response)
+             #do_db_things(key, response)
+             create_table(key, response)
+             return response['ContentType']
+         except Exception as e:
+             print(e)
+             print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+             raise e
+   #+end_src
+
+   layers:
+   #+begin_src json
+   {
+    "Configuration": {
+        "FunctionName": "import-csv-to-pg",
+        "FunctionArn": "arn:aws:lambda:us-east-1:925001613665:function:import-csv-to-pg",
+        "Runtime": "python3.7",
+        "Role": "arn:aws:iam::925001613665:role/LabRole",
+        "Handler": "lambda_function.lambda_handler",
+        "CodeSize": 1120,
+        "Description": "An Amazon S3 trigger that retrieves metadata for the object that has been updated.",
+        "Timeout": 3,
+        "MemorySize": 128,
+        "LastModified": "2021-09-10T09:15:47.416+0000",
+        "CodeSha256": "/Ewv6RkZIB9ffYa0erhu+P3H7XStKwA+xZPJH689toM=",
+        "Version": "$LATEST",
+        "Environment": {
+            "Variables": {
+                "RDS_PASS": "......"
+            }
+        },
+        "TracingConfig": {
+            "Mode": "PassThrough"
+        },
+        "RevisionId": "fadff4bb-a3d1-45d5-af90-b516a1b41a4f",
+        "Layers": [
+            {
+                "Arn": "arn:aws:lambda:us-east-1:898466741470:layer:psycopg2-py37:3",
+                "CodeSize": 3241885
+            },
+            {
+                "Arn": "arn:aws:lambda:us-east-1:251566558623:layer:python37-layer-pandas-gbq:1",
+                "CodeSize": 38697072
+            },
+            {
+                "Arn": "arn:aws:lambda:us-east-1:925001613665:layer:sqlalchemy-python-37:4",
+                "CodeSize": 15804426
+            }
+        ],
+        "State": "Active",
+        "LastUpdateStatus": "Successful",
+        "PackageType": "Zip"
+    },
+   #+end_src
+   sqlalchemy-python-37.4 is custom, using the method in from previous
+   chapter (venv, pip, mkdir, cd, zip).
+
+** refs
+   https://wakeupcoders.medium.com/how-to-use-external-libraries-in-lambda-function-df1cee4a7c3a
+   https://aws.amazon.com/blogs/compute/clojure/
+** clojure and lambdas
+   - https://aws.amazon.com/blogs/compute/clojure/
+   - https://serverlessrepo.aws.amazon.com/applications/eu-central-1/443526418261/holy-lambda-babashka-runtime
+* EC2
+** connect to an instance via ssh (ssm?)
+** add/change a volume without restarting
+   https://aws.amazon.com/blogs/storage/migrate-your-amazon-ebs-volumes-from-gp2-to-gp3-and-save-up-to-20-on-costs/
+   shows how to modify a volume and change its characteristics on the
+   fly.
+* Routing, (dns+alb)
 
 * Terraform
 * AIM
 * aws-mfa
 * awslogs get '/bla/my-log-group' ALL  --start=1h --watch | grep '/bla/my-log-group/something' | lnav
+* AWS Batch
+  - https://servian.dev/getting-started-with-aws-batch-3442446fc62
+  - http://aws-de-marketing.s3-eu-central-1.amazonaws.com/Field%20Marketing/Industry-Web-Week/Presentations/Banking-Insurance-Web-Day/06_Running%20Batch%20Workloads%20at%20Scale%20with%20Containers%20on%20AWS.pdf
+  - https://ec2spotworkshops.com/monte-carlo-on-ec2-spot-fleet/lab4.html
+  - https://dev.to/christopherlai/consider-aws-batch-for-your-next-background-jobs-4725
+  - https://ec2spotworkshops.com/
+  - https://stackify.com/aws-batch-guide/
+* EBS
+  - https://www.metabase.com/docs/latest/operations-guide/running-metabase-on-elastic-beanstalk.html
+  - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html
+  - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/GettingStarted.CreateApp.html
+  - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker.container.console.html

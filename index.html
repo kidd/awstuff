@@ -70,33 +70,45 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org15bbbb3">1. AWS Lambda</a>
+<li><a href="#org6e9eddd">1. AWS Lambda</a>
 <ul>
-<li><a href="#org2d6f593">1.1. One off simple python Lambda</a>
+<li><a href="#org9194856">1.1. One off simple python Lambda</a>
 <ul>
-<li><a href="#orgb7ff07b">1.1.1. Hello world</a></li>
-<li><a href="#org4066cae">1.1.2. Monitor</a></li>
-<li><a href="#org030a49d">1.1.3. Schdedule</a></li>
+<li><a href="#org281b94b">1.1.1. Hello world</a></li>
+<li><a href="#orgdb2ca5d">1.1.2. Monitor</a></li>
+<li><a href="#orgede366d">1.1.3. Schdedule</a></li>
 </ul>
 </li>
-<li><a href="#org72efc8e">1.2. One off not-so-simple python Lambda</a>
+<li><a href="#org04c0cc9">1.2. One off not-so-simple python Lambda</a>
 <ul>
-<li><a href="#orgaabeaeb">1.2.1. Layer vs bundling</a></li>
-<li><a href="#orgc692baa">1.2.2. Env vars</a></li>
+<li><a href="#orgb45187d">1.2.1. Layer vs bundling</a></li>
+<li><a href="#orgffa0d02">1.2.2. Env vars</a></li>
 </ul>
 </li>
+<li><a href="#orgf7b4810">1.3. s3-csv-to-rds</a></li>
+<li><a href="#org8abc044">1.4. refs</a></li>
+<li><a href="#orgc824ada">1.5. clojure and lambdas</a></li>
 </ul>
 </li>
-<li><a href="#org580341e">2. Terraform</a></li>
-<li><a href="#orgdea29ab">3. AIM</a></li>
-<li><a href="#org38ffed7">4. aws-mfa</a></li>
-<li><a href="#orgf858312">5. awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</a></li>
+<li><a href="#org0434902">2. EC2</a>
+<ul>
+<li><a href="#org01a51ad">2.1. connect to an instance via ssh (ssm?)</a></li>
+<li><a href="#orge18b595">2.2. add/change a volume without restarting</a></li>
+</ul>
+</li>
+<li><a href="#orgf2d2cdd">3. Routing, (dns+alb)</a></li>
+<li><a href="#org91c5ced">4. Terraform</a></li>
+<li><a href="#orgd722ce1">5. AIM</a></li>
+<li><a href="#orgd5652e5">6. aws-mfa</a></li>
+<li><a href="#orgbaa0c6f">7. awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</a></li>
+<li><a href="#org1020368">8. AWS Batch</a></li>
+<li><a href="#org664422a">9. EBS</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org15bbbb3" class="outline-2">
-<h2 id="org15bbbb3"><span class="section-number-2">1</span> AWS Lambda</h2>
+<div id="outline-container-org6e9eddd" class="outline-2">
+<h2 id="org6e9eddd"><span class="section-number-2">1</span> AWS Lambda</h2>
 <div class="outline-text-2" id="text-1">
 
 <div class="figure">
@@ -104,8 +116,8 @@ for the JavaScript code in this tag.
 </p>
 </div>
 </div>
-<div id="outline-container-org2d6f593" class="outline-3">
-<h3 id="org2d6f593"><span class="section-number-3">1.1</span> One off simple python Lambda</h3>
+<div id="outline-container-org9194856" class="outline-3">
+<h3 id="org9194856"><span class="section-number-3">1.1</span> One off simple python Lambda</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Like a way to have cheap scripts that run daily, to fetch stuff
@@ -116,8 +128,8 @@ from the internet and synchronize data, or smth.
 Lambdas are region based, so open the region you want to run in.
 </p>
 </div>
-<div id="outline-container-orgb7ff07b" class="outline-4">
-<h4 id="orgb7ff07b"><span class="section-number-4">1.1.1</span> Hello world</h4>
+<div id="outline-container-org281b94b" class="outline-4">
+<h4 id="org281b94b"><span class="section-number-4">1.1.1</span> Hello world</h4>
 <div class="outline-text-4" id="text-1-1-1">
 <ul class="org-ul">
 <li>Open the lambda AWS cli</li>
@@ -142,15 +154,15 @@ The file is called <code>lambda_function.py</code> IIRC
 </p>
 </div>
 </div>
-<div id="outline-container-org4066cae" class="outline-4">
-<h4 id="org4066cae"><span class="section-number-4">1.1.2</span> Monitor</h4>
+<div id="outline-container-orgdb2ca5d" class="outline-4">
+<h4 id="orgdb2ca5d"><span class="section-number-4">1.1.2</span> Monitor</h4>
 <div class="outline-text-4" id="text-1-1-2">
 <p>
 There are (at least) 2 ways of monitoring single executions of lambdas:
 </p>
 </div>
 <ol class="org-ol">
-<li><a id="org520231d"></a>Via cloudwatch<br />
+<li><a id="org4939120"></a>Via cloudwatch<br />
 <div class="outline-text-5" id="text-1-1-2-1">
 <p>
 To get notified if it fails via cloudwatch, we'll have to create a
@@ -170,7 +182,7 @@ brought us)</li>
 </ul>
 </div>
 </li>
-<li><a id="orgc30ca15"></a>Via Lambda destination<br />
+<li><a id="org73912c7"></a>Via Lambda destination<br />
 <div class="outline-text-5" id="text-1-1-2-2">
 <ul class="org-ul">
 <li>Add Destination</li>
@@ -181,8 +193,8 @@ brought us)</li>
 </li>
 </ol>
 </div>
-<div id="outline-container-org030a49d" class="outline-4">
-<h4 id="org030a49d"><span class="section-number-4">1.1.3</span> Schdedule</h4>
+<div id="outline-container-orgede366d" class="outline-4">
+<h4 id="orgede366d"><span class="section-number-4">1.1.3</span> Schdedule</h4>
 <div class="outline-text-4" id="text-1-1-3">
 <p>
 We add scheduling "triggers" from the perspective
@@ -190,8 +202,8 @@ We add scheduling "triggers" from the perspective
 </div>
 </div>
 </div>
-<div id="outline-container-org72efc8e" class="outline-3">
-<h3 id="org72efc8e"><span class="section-number-3">1.2</span> One off not-so-simple python Lambda</h3>
+<div id="outline-container-org04c0cc9" class="outline-3">
+<h3 id="org04c0cc9"><span class="section-number-3">1.2</span> One off not-so-simple python Lambda</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Let's try to use an external lib, like stripe. For stripe you need
@@ -204,15 +216,15 @@ Let's try to use an external lib, like stripe. For stripe you need
 </pre>
 </div>
 </div>
-<div id="outline-container-orgaabeaeb" class="outline-4">
-<h4 id="orgaabeaeb"><span class="section-number-4">1.2.1</span> Layer vs bundling</h4>
+<div id="outline-container-orgb45187d" class="outline-4">
+<h4 id="orgb45187d"><span class="section-number-4">1.2.1</span> Layer vs bundling</h4>
 <div class="outline-text-4" id="text-1-2-1">
 <p>
 There are 2 ways to use external libs: Bundling and using layers:
 </p>
 </div>
 <ol class="org-ol">
-<li><a id="org22187dd"></a>Bundle<br />
+<li><a id="org0ba13b2"></a>Bundle<br />
 <div class="outline-text-5" id="text-1-2-1-1">
 <p>
 As they explain <a href="https://stackoverflow.com/questions/36411364/how-to-use-stripe-apis-on-aws-lambda-in-python">here</a>, you can bundle all needed libs in the same
@@ -221,7 +233,7 @@ zip together with your function.  <code>pip install --target\</code>"$PWD"
 </p>
 </div>
 </li>
-<li><a id="org827f0a5"></a>Layers<br />
+<li><a id="org5961df4"></a>Layers<br />
 <div class="outline-text-5" id="text-1-2-1-2">
 <p>
 A more sophisticated way is to upload the lib separately, and
@@ -237,22 +249,28 @@ same directory and we can use the same strategy. That'd make
 sense.
 </p>
 
+<p>
+How to package a lambda with zip: <a href="https://docs.aws.amazon.com/lambda/latest/dg/python-package.html#python-package-create-package-with-dependency">https://docs.aws.amazon.com/lambda/latest/dg/python-package.html#python-package-create-package-with-dependency</a>
+</p>
 <div class="org-src-container">
 <pre class="src src-shell"><span style="font-weight: bold;">echo</span> <span style="font-style: italic;">'stripe'</span> &gt; requirements.txt
 python -m venv venv;
 . venv/bin/activate
 pip install -r requirements.txt
 mkdir build/python/lib/python3.7/site-packages
-cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/site-packages
+cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">cp -a venv/lib/python3.7/site-packages build/python/lib/python3.7/site-packages</span>
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">cd bui</span>
 <span style="font-weight: bold;">cd</span> build; zip -r ../stripe.zip .
+
 </pre>
 </div>
 </div>
 </li>
 </ol>
 </div>
-<div id="outline-container-orgc692baa" class="outline-4">
-<h4 id="orgc692baa"><span class="section-number-4">1.2.2</span> Env vars</h4>
+<div id="outline-container-orgffa0d02" class="outline-4">
+<h4 id="orgffa0d02"><span class="section-number-4">1.2.2</span> Env vars</h4>
 <div class="outline-text-4" id="text-1-2-2">
 <p>
 Our file is now something like this
@@ -277,20 +295,210 @@ Make sure everything is deployed, test and yay!
 </div>
 </div>
 </div>
-</div>
+<div id="outline-container-orgf7b4810" class="outline-3">
+<h3 id="orgf7b4810"><span class="section-number-3">1.3</span> s3-csv-to-rds</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+configure an s3 repo. Create a lambda that gets triggered on <code>put
+   object</code> on that s3. Code is as follows.
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> json
+<span style="font-weight: bold;">import</span> urllib.parse
+<span style="font-weight: bold;">import</span> boto3
+<span style="font-weight: bold;">import</span> psycopg2 <span style="font-weight: bold;">as</span> pg2
+<span style="font-weight: bold;">import</span> os
+<span style="font-weight: bold;">import</span> time
+<span style="font-weight: bold;">from</span> sqlalchemy <span style="font-weight: bold;">import</span> create_engine
+<span style="font-weight: bold;">import</span> pandas <span style="font-weight: bold;">as</span> pd
 
 
-<div id="outline-container-org580341e" class="outline-2">
-<h2 id="org580341e"><span class="section-number-2">2</span> Terraform</h2>
+
+<span style="font-weight: bold;">print</span>(<span style="font-style: italic;">'Loading function'</span>)
+
+<span style="font-weight: bold; font-style: italic;">s3</span> = boto3.client(<span style="font-style: italic;">'s3'</span>)
+
+<span style="font-weight: bold; font-style: italic;">dbname</span> = <span style="font-style: italic;">'csvs'</span>
+<span style="font-weight: bold; font-style: italic;">user</span> = <span style="font-style: italic;">'postgres'</span>
+<span style="font-weight: bold; font-style: italic;">host</span> = <span style="font-style: italic;">'database-1........us-east-1.rds.amazonaws.com'</span>
+<span style="font-weight: bold; font-style: italic;">password</span> = os.environ.get(<span style="font-style: italic;">'RDS_PASS'</span>)
+<span style="font-weight: bold; font-style: italic;">bucket</span> = <span style="font-style: italic;">'metabase-testing-csv-bucket'</span>
+
+<span style="font-weight: bold; font-style: italic;">connection_string</span> = <span style="font-style: italic;">"postgresql://{}:{}@{}:5432/{}"</span>\
+    .<span style="font-weight: bold;">format</span>(user, password, host, dbname)
+
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">create_table</span>(key, s3_object):
+    <span style="font-weight: bold; font-style: italic;">response</span> = s3.get_object(Bucket=bucket, Key=key)
+    <span style="font-weight: bold; font-style: italic;">status</span> = response.get(<span style="font-style: italic;">"ResponseMetadata"</span>, {}).get(<span style="font-style: italic;">"HTTPStatusCode"</span>)
+    <span style="font-weight: bold;">if</span> status == 200:
+        <span style="font-weight: bold;">print</span>(f<span style="font-style: italic;">"Successful S3 get_object response. Status - {status}"</span>)
+        <span style="font-weight: bold; font-style: italic;">engine</span>=create_engine(connection_string)
+
+        <span style="font-weight: bold; font-style: italic;">data</span> = pd.read_csv(response.get(<span style="font-style: italic;">"Body"</span>))
+        data.to_sql(<span style="font-style: italic;">"mytable_"</span>+ <span style="font-style: italic;">"{}"</span>.<span style="font-weight: bold;">format</span>(<span style="font-weight: bold;">int</span>(time.time())), engine, index=<span style="font-weight: bold; text-decoration: underline;">True</span>, dtype=<span style="font-weight: bold; text-decoration: underline;">None</span>)
+    <span style="font-weight: bold;">else</span>:
+        <span style="font-weight: bold;">print</span>(f<span style="font-style: italic;">"Unsuccessful S3 get_object response. Status - {status}"</span>)
+
+
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">do_db_things</span>(key, s3_object):
+    <span style="font-weight: bold; font-style: italic;">conn</span> = psycopg2.connect(connection_string)
+    <span style="font-weight: bold; font-style: italic;">cur</span> = conn.cursor()
+    cur.execute(<span style="font-style: italic;">"select aws_s3.table_import_from_s3 ('public.test', '', '(FORMAT CSV, HEADER true)', bucket, 'csvs/test.csv', 'us-east-1');"</span>)
+    cur.execute(<span style="font-style: italic;">"COMMIT;"</span>)
+    <span style="font-weight: bold;">print</span>(<span style="font-style: italic;">"done?"</span>)
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">lambda_handler</span>(event, context):
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print("Received event: " + json.dumps(event, indent=2))</span>
+
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Get the object from the event and show its content type</span>
+    <span style="font-weight: bold; font-style: italic;">bucket</span> = event[<span style="font-style: italic;">'Records'</span>][0][<span style="font-style: italic;">'s3'</span>][<span style="font-style: italic;">'bucket'</span>][<span style="font-style: italic;">'name'</span>]
+    <span style="font-weight: bold; font-style: italic;">key</span> = urllib.parse.unquote_plus(event[<span style="font-style: italic;">'Records'</span>][0][<span style="font-style: italic;">'s3'</span>][<span style="font-style: italic;">'object'</span>][<span style="font-style: italic;">'key'</span>], encoding=<span style="font-style: italic;">'utf-8'</span>)
+    <span style="font-weight: bold;">try</span>:
+        <span style="font-weight: bold; font-style: italic;">response</span> = s3.get_object(Bucket=bucket, Key=key)
+        <span style="font-weight: bold;">print</span>(<span style="font-style: italic;">"CONTENT TYPE: "</span> + response[<span style="font-style: italic;">'ContentType'</span>])
+        <span style="font-weight: bold;">print</span>(response)
+        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">do_db_things(key, response)</span>
+        create_table(key, response)
+        <span style="font-weight: bold;">return</span> response[<span style="font-style: italic;">'ContentType'</span>]
+    <span style="font-weight: bold;">except</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold;">as</span> e:
+        <span style="font-weight: bold;">print</span>(e)
+        <span style="font-weight: bold;">print</span>(<span style="font-style: italic;">'Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'</span>.<span style="font-weight: bold;">format</span>(key, bucket))
+        <span style="font-weight: bold;">raise</span> e
+</pre>
 </div>
-<div id="outline-container-orgdea29ab" class="outline-2">
-<h2 id="orgdea29ab"><span class="section-number-2">3</span> AIM</h2>
+
+<p>
+layers:
+</p>
+<div class="org-src-container">
+<pre class="src src-json">{
+ "Configuration": {
+     "FunctionName": "import-csv-to-pg",
+     "FunctionArn": "arn:aws:lambda:us-east-1:925001613665:function:import-csv-to-pg",
+     "Runtime": "python3.7",
+     "Role": "arn:aws:iam::925001613665:role/LabRole",
+     "Handler": "lambda_function.lambda_handler",
+     "CodeSize": 1120,
+     "Description": "An Amazon S3 trigger that retrieves metadata for the object that has been updated.",
+     "Timeout": 3,
+     "MemorySize": 128,
+     "LastModified": "2021-09-10T09:15:47.416+0000",
+     "CodeSha256": "/Ewv6RkZIB9ffYa0erhu+P3H7XStKwA+xZPJH689toM=",
+     "Version": "$LATEST",
+     "Environment": {
+	 "Variables": {
+	     "RDS_PASS": "......"
+	 }
+     },
+     "TracingConfig": {
+	 "Mode": "PassThrough"
+     },
+     "RevisionId": "fadff4bb-a3d1-45d5-af90-b516a1b41a4f",
+     "Layers": [
+	 {
+	     "Arn": "arn:aws:lambda:us-east-1:898466741470:layer:psycopg2-py37:3",
+	     "CodeSize": 3241885
+	 },
+	 {
+	     "Arn": "arn:aws:lambda:us-east-1:251566558623:layer:python37-layer-pandas-gbq:1",
+	     "CodeSize": 38697072
+	 },
+	 {
+	     "Arn": "arn:aws:lambda:us-east-1:925001613665:layer:sqlalchemy-python-37:4",
+	     "CodeSize": 15804426
+	 }
+     ],
+     "State": "Active",
+     "LastUpdateStatus": "Successful",
+     "PackageType": "Zip"
+ },
+</pre>
 </div>
-<div id="outline-container-org38ffed7" class="outline-2">
-<h2 id="org38ffed7"><span class="section-number-2">4</span> aws-mfa</h2>
+<p>
+sqlalchemy-python-37.4 is custom, using the method in from previous
+chapter (venv, pip, mkdir, cd, zip).
+</p>
 </div>
-<div id="outline-container-orgf858312" class="outline-2">
-<h2 id="orgf858312"><span class="section-number-2">5</span> awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</h2>
+</div>
+
+<div id="outline-container-org8abc044" class="outline-3">
+<h3 id="org8abc044"><span class="section-number-3">1.4</span> refs</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+<a href="https://wakeupcoders.medium.com/how-to-use-external-libraries-in-lambda-function-df1cee4a7c3a">https://wakeupcoders.medium.com/how-to-use-external-libraries-in-lambda-function-df1cee4a7c3a</a>
+<a href="https://aws.amazon.com/blogs/compute/clojure/">https://aws.amazon.com/blogs/compute/clojure/</a>
+</p>
+</div>
+</div>
+<div id="outline-container-orgc824ada" class="outline-3">
+<h3 id="orgc824ada"><span class="section-number-3">1.5</span> clojure and lambdas</h3>
+<div class="outline-text-3" id="text-1-5">
+<ul class="org-ul">
+<li><a href="https://aws.amazon.com/blogs/compute/clojure/">https://aws.amazon.com/blogs/compute/clojure/</a></li>
+<li><a href="https://serverlessrepo.aws.amazon.com/applications/eu-central-1/443526418261/holy-lambda-babashka-runtime">https://serverlessrepo.aws.amazon.com/applications/eu-central-1/443526418261/holy-lambda-babashka-runtime</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-org0434902" class="outline-2">
+<h2 id="org0434902"><span class="section-number-2">2</span> EC2</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-org01a51ad" class="outline-3">
+<h3 id="org01a51ad"><span class="section-number-3">2.1</span> connect to an instance via ssh (ssm?)</h3>
+</div>
+<div id="outline-container-orge18b595" class="outline-3">
+<h3 id="orge18b595"><span class="section-number-3">2.2</span> add/change a volume without restarting</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+<a href="https://aws.amazon.com/blogs/storage/migrate-your-amazon-ebs-volumes-from-gp2-to-gp3-and-save-up-to-20-on-costs/">https://aws.amazon.com/blogs/storage/migrate-your-amazon-ebs-volumes-from-gp2-to-gp3-and-save-up-to-20-on-costs/</a>
+shows how to modify a volume and change its characteristics on the
+fly.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgf2d2cdd" class="outline-2">
+<h2 id="orgf2d2cdd"><span class="section-number-2">3</span> Routing, (dns+alb)</h2>
+</div>
+
+<div id="outline-container-org91c5ced" class="outline-2">
+<h2 id="org91c5ced"><span class="section-number-2">4</span> Terraform</h2>
+</div>
+<div id="outline-container-orgd722ce1" class="outline-2">
+<h2 id="orgd722ce1"><span class="section-number-2">5</span> AIM</h2>
+</div>
+<div id="outline-container-orgd5652e5" class="outline-2">
+<h2 id="orgd5652e5"><span class="section-number-2">6</span> aws-mfa</h2>
+</div>
+<div id="outline-container-orgbaa0c6f" class="outline-2">
+<h2 id="orgbaa0c6f"><span class="section-number-2">7</span> awslogs get '/bla/my-log-group' ALL  &#x2013;start=1h &#x2013;watch | grep '/bla/my-log-group/something' | lnav</h2>
+</div>
+<div id="outline-container-org1020368" class="outline-2">
+<h2 id="org1020368"><span class="section-number-2">8</span> AWS Batch</h2>
+<div class="outline-text-2" id="text-8">
+<ul class="org-ul">
+<li><a href="https://servian.dev/getting-started-with-aws-batch-3442446fc62">https://servian.dev/getting-started-with-aws-batch-3442446fc62</a></li>
+<li><a href="http://aws-de-marketing.s3-eu-central-1.amazonaws.com/Field%20Marketing/Industry-Web-Week/Presentations/Banking-Insurance-Web-Day/06_Running%20Batch%20Workloads%20at%20Scale%20with%20Containers%20on%20AWS.pdf">http://aws-de-marketing.s3-eu-central-1.amazonaws.com/Field Marketing/Industry-Web-Week/Presentations/Banking-Insurance-Web-Day/06_Running Batch Workloads at Scale with Containers on AWS.pdf</a></li>
+<li><a href="https://ec2spotworkshops.com/monte-carlo-on-ec2-spot-fleet/lab4.html">https://ec2spotworkshops.com/monte-carlo-on-ec2-spot-fleet/lab4.html</a></li>
+<li><a href="https://dev.to/christopherlai/consider-aws-batch-for-your-next-background-jobs-4725">https://dev.to/christopherlai/consider-aws-batch-for-your-next-background-jobs-4725</a></li>
+<li><a href="https://ec2spotworkshops.com/">https://ec2spotworkshops.com/</a></li>
+<li><a href="https://stackify.com/aws-batch-guide/">https://stackify.com/aws-batch-guide/</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org664422a" class="outline-2">
+<h2 id="org664422a"><span class="section-number-2">9</span> EBS</h2>
+<div class="outline-text-2" id="text-9">
+<ul class="org-ul">
+<li><a href="https://www.metabase.com/docs/latest/operations-guide/running-metabase-on-elastic-beanstalk.html">https://www.metabase.com/docs/latest/operations-guide/running-metabase-on-elastic-beanstalk.html</a></li>
+<li><a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html">https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/Welcome.html</a></li>
+<li><a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/GettingStarted.CreateApp.html">https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/GettingStarted.CreateApp.html</a></li>
+<li><a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker.container.console.html">https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker.container.console.html</a></li>
+</ul>
+</div>
 </div>
 </div>
 <div id="postamble" class="status">
